@@ -38,6 +38,8 @@ bool Game::Initialize() {
 		return false;
 	}
 
+	LoadSRSTests();
+
 	//Board setup
 	std::vector<std::vector<block>> gBoard(40, std::vector<block>(10, EMPTY));
 	board = gBoard;
@@ -57,6 +59,104 @@ bool Game::Initialize() {
 	
 	return true;
 
+
+}
+
+void Game::LoadSRSTests() {
+	std::vector<std::vector<Translation>> normalTests(4, std::vector<Translation>(4));
+	Tests = normalTests;
+	std::vector<std::vector<Translation>> otherTests(4, std::vector<Translation>(4));
+	ITests = otherTests;
+
+	//J, L, T, S, Z Test Data
+	// Test going from Orientation 0 -> 1
+	Translation test0_1 = { -1, 0 };
+	Translation test0_2 = { -1,1 };
+	Translation test0_3 = { 0, -2 };
+	Translation test0_4 = { -1, -2 };
+
+	Tests[0][0] = test0_1;
+	Tests[0][1] = test0_2;
+	Tests[0][2] = test0_3;
+	Tests[0][3] = test0_4;
+
+	// Test going from Orientation 1 -> 2
+	Translation test1_1 = { 1, 0 };
+	Translation test1_2 = { 1,-1 };
+	Translation test1_3 = { 0, 2 };
+	Translation test1_4 = { 1, 2 };
+
+	Tests[1][0] = test1_1;
+	Tests[1][1] = test1_2;
+	Tests[1][2] = test1_3;
+	Tests[1][3] = test1_4;
+
+	// Test going from Orientation 2 -> 3
+	Translation test2_1 = { 1, 0 };
+	Translation test2_2 = { 1,1 };
+	Translation test2_3 = { 0, -2 };
+	Translation test2_4 = { 1, -2 };
+
+	Tests[2][0] = test2_1;
+	Tests[2][1] = test2_2;
+	Tests[2][2] = test2_3;
+	Tests[2][3] = test2_4;
+
+	// Test going from Orientation 3 -> 0
+	Translation test3_1 = { -1, 0 };
+	Translation test3_2 = { -1,-1 };
+	Translation test3_3 = { 0, 2 };
+	Translation test3_4 = { -1, 2 };
+
+	Tests[3][0] = test3_1;
+	Tests[3][1] = test3_2;
+	Tests[3][2] = test3_3;
+	Tests[3][3] = test3_4;
+
+	// I Test Data
+	// Orientation 0 -> 1
+	Translation itest0_1 = { -2, 0 };
+	Translation itest0_2 = { 1, 0 };
+	Translation itest0_3 = { -2, -1 };
+	Translation itest0_4 = { 1, 2 };
+
+	ITests[0][0] = itest0_1;
+	ITests[0][1] = itest0_2;
+	ITests[0][2] = itest0_3;
+	ITests[0][3] = itest0_4;
+
+	//Orientation 1 -> 2
+	Translation itest1_1 = { -1, 0 };
+	Translation itest1_2 = { 2, 0 };
+	Translation itest1_3 = { -1, 2 };
+	Translation itest1_4 = { 2, -1 };
+
+	ITests[1][0] = itest1_1;
+	ITests[1][1] = itest1_2;
+	ITests[1][2] = itest1_3;
+	ITests[1][3] = itest1_4;
+
+	//Orientation 2 -> 3
+	Translation itest2_1 = { 2, 0 };
+	Translation itest2_2 = { -1, 0 };
+	Translation itest2_3 = { 2, 1 };
+	Translation itest2_4 = { -1, -2 };
+
+	ITests[2][0] = itest2_1;
+	ITests[2][1] = itest2_2;
+	ITests[2][2] = itest2_3;
+	ITests[2][3] = itest2_4;
+
+	//Orientation 3 -> 0;
+	Translation itest3_1 = { -2, 0 };
+	Translation itest3_2 = { 1, 0 };
+	Translation itest3_3 = { -2, -1 };
+	Translation itest3_4 = { 1, 2 };
+
+	ITests[3][0] = itest3_1;
+	ITests[3][1] = itest3_2;
+	ITests[3][2] = itest3_3;
+	ITests[3][3] = itest3_4;
 
 }
 
@@ -220,6 +320,11 @@ bool Game::handleInput(SDL_Event &e) {
 					shift(1);
 					break;
 				}
+				case SDLK_UP: {
+					if (selection.type != O) {
+						RotateClockwise();
+					}
+				}
 			}
 		}
 
@@ -251,6 +356,94 @@ void Game::shift(int amount) {
 
 }
 
+void Game::RotateClockwise() {
+	//Save the last (valid) X and Y coordinates for the tetromino and its Orientation
+	int Orientation = selection.orientation;
+	std::vector<Translation> lastPositions(4);
+	for (int i = 0; i < 4; i++) {
+		lastPositions[i] = { selection.blocks[i].x, selection.blocks[i].y };
+	}
+	selection.RotateClockwise();
+	if (!TestRotation(Orientation)) {
+		//change the coordinates back to their original values
+		for (int i = 0; i < 4; i++) {
+			selection.blocks[i].x = lastPositions[i].x;
+			selection.blocks[i].y = lastPositions[i].y;
+		}
+		selection.orientation = Orientation;
+	}
+
+}
+
+bool Game::TestRotation(int originalOrientation) {
+	bool conflict = false;
+
+	for (BlockInstance& b : selection.blocks) {
+		if (ValidPosition(b.x, b.y)) {
+			conflict = true;
+			break;
+		}
+	}
+
+	if (!conflict) {
+		return true;
+	}
+	
+	pieceType p = selection.type;
+	if (p == I) {
+		for (int i = 0; i < 4; i++) {
+			int tX = ITests[originalOrientation][i].x;
+			int tY = ITests[originalOrientation][i].y;
+			bool valid = true;
+			for (BlockInstance& b : selection.blocks) {
+				if (!ValidPosition(b.x + tX, b.y + tY)) {
+					valid = false;
+					break;
+				}
+			}
+			if (valid) {
+				for (BlockInstance& b : selection.blocks) {
+					b.x += tX;
+					b.y += tY;
+				}
+				gravityTimer.Stop();
+				lockTimer.Stop();
+				return true;
+			}
+		}
+	}
+	else 
+	{
+		for (int i = 0; i < 4; i++) {
+			int tX = Tests[originalOrientation][i].x;
+			int tY = Tests[originalOrientation][i].y;
+			bool valid = true;
+			for (BlockInstance& b : selection.blocks) {
+				if (!ValidPosition(b.x + tX, b.y + tY)) {
+					valid = false;
+					break;
+				}
+			}
+			if (valid) {
+				for (BlockInstance& b : selection.blocks) {
+					b.x += tX;
+					b.y += tY;
+				}
+				gravityTimer.Stop();
+				lockTimer.Stop();
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool Game::ValidPosition(int x, int y) {
+	if (x < 0 || x > 9 || y < 0) {
+		return false;
+	}
+	return (board[y][x] == EMPTY);
+}
 
 void Game::runGame() {
 	//std::cout << std::endl << "CURRENT PIECE: " << currentPiece << "\n";

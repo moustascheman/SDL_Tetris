@@ -8,6 +8,7 @@
 #include <array>
 #include "PieceInstance.h"
 #include "Timer.h"
+#include "Translations.h"
 
 
 
@@ -47,6 +48,8 @@ private:
 	SDL_Texture* blockTexture;
 	SDL_Renderer* gRenderer;
 	std::vector<std::vector<block>> board;
+	std::vector<std::vector<Translation>> Tests;
+	std::vector<std::vector<Translation>> ITests;
 	std::queue<pieceType> nextQueue;
 	SDL_Rect boardRect = { boardTopX, boardTopY, boardW, boardH };
 	SDL_Rect boardBorder = { boardTopX - 5, boardTopY - 5, boardW + 10, boardH + 10 };
@@ -59,9 +62,13 @@ private:
 	void DrawBoard();
 	void shift(int amount);
 	void CheckLock();
+	void LoadSRSTests();
+	void RotateClockwise();
 	void Lock();
 	void SpawnPiece();
 	bool SetupBlockSprites();
+	bool ValidPosition(int x, int y);
+	bool TestRotation(int originalOrientation);
 	bool handleInput(SDL_Event &e);
 	Timer gravityTimer;
 	Timer lockTimer;

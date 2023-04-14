@@ -162,15 +162,15 @@ void PieceInstance::RotateClockwise() {
 		// O cannot be rotated
 		if (type != O) {
 			for (int i = 0; i < 4; i++) {
-				if (blocks[i].x != pivotX && blocks[i].y != pivotY) {
+				if (blocks[i].x != pivotX || blocks[i].y != pivotY) {
 					int originX = blocks[i].x - pivotX;
 					int originY = blocks[i].y - pivotY;
 
-					int tempX = pivotY;
-					int tempY = -1 * pivotX;
+					int tempX = originY;
+					int tempY = -1 * originX;
 
 					blocks[i].x = tempX + pivotX;
-					blocks[i].y = tempX + pivotY;
+					blocks[i].y = tempY + pivotY;
 				}
 			}
 			//increment orientation, reset it to 0 if it's going above 3

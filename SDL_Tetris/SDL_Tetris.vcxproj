@@ -142,6 +142,7 @@
     <ClInclude Include="GameEnums.h" />
     <ClInclude Include="PieceInstance.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="Translations.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
