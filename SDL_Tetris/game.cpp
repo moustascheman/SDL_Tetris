@@ -2,10 +2,14 @@
 #include <iostream>
 
 
+
+
 bool Game::Initialize() {
 
 	bool success = true;
 	//SDL Setup
+
+	
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
@@ -43,6 +47,7 @@ bool Game::Initialize() {
 	currentPiece = nextQueue.front();
 	nextQueue.pop();
 
+	
 	//spawn top piece
 	selection.SpawnNewPiece(static_cast<pieceType>(currentPiece));
 	
@@ -63,12 +68,18 @@ void Game::Gravity() {
 			gravityTimer.Stop();
 			bool isValid = true;
 			for (BlockInstance& b : selection.blocks) {
-				if (b.y - 1 < 0) {
+				if (b.y == 0) {
 					isValid = false;
+					if (!lockTimer.isRunning) {
+						lockTimer.Start();
+					}
 					break;
 				}
 				else if(board[b.y-1][b.x] != EMPTY) {
 					isValid = false;
+					if (!lockTimer.isRunning) {
+						lockTimer.Start();
+					}
 					break;
 				}
 			}
@@ -79,6 +90,44 @@ void Game::Gravity() {
 			}
 		}
 	}
+}
+
+void Game::CheckLock() {
+	if (lockTimer.isRunning) {
+		uint64_t currentTime = lockTimer.GetTime();
+		if (currentTime >= 500) {
+			lockTimer.Stop();
+			bool validPosition = false;
+			for (BlockInstance& b : selection.blocks) {
+				if (b.y == 0 || board[b.y - 1][b.x] != EMPTY) {
+					validPosition = true;
+					break;
+				}
+			}
+			if (validPosition) {
+				Lock();
+			}
+		}
+	}
+}
+
+void Game::Lock() {
+	for (BlockInstance& b : selection.blocks) {
+		board[b.y][b.x] = b.col;
+	}
+	mustSpawn = true;
+}
+
+
+void Game::SpawnPiece() {
+	if (nextQueue.size() < 3) {
+		FillPieceQueue();
+	}
+	currentPiece = nextQueue.front();
+	nextQueue.pop();
+	
+	selection.SpawnNewPiece(static_cast<pieceType>(currentPiece));
+	mustSpawn = false;
 }
 
 void Game::FillPieceQueue() {
@@ -194,6 +243,7 @@ void Game::shift(int amount) {
 	}
 	if (isValid) {
 		gravityTimer.Stop();
+		lockTimer.Stop();
 		for (BlockInstance &b : selection.blocks) {
 			b.x += amount;
 		}
@@ -208,6 +258,11 @@ void Game::runGame() {
 	bool quit = false;
 	
 	while (!quit) {
+		if (mustSpawn) {
+			SpawnPiece();
+		}
+
+
 		if (!gravityTimer.isRunning) {
 			gravityTimer.Start();
 		}
@@ -217,6 +272,7 @@ void Game::runGame() {
 		//Game Logic
 
 		Gravity();
+		CheckLock();
 
 		//Rendering
 		SDL_SetRenderDrawColor(gRenderer, 0x0, 0x0, 0x0, 0xFF);
@@ -226,7 +282,7 @@ void Game::runGame() {
 		SDL_SetRenderDrawColor(gRenderer, 0x0, 0x0, 0x0, 0xFF);
 		SDL_RenderFillRect(gRenderer, &boardRect);
 		DrawSelection();
-
+		DrawBoard();
 
 
 		SDL_RenderPresent(gRenderer);
@@ -238,11 +294,26 @@ void Game::runGame() {
 
 void Game::DrawSelection() {
 	//SDL_RenderSetViewport(gRenderer, &boardRect);
-	for (int i = 0; i < 4; i++) {
-		BlockInstance b = selection.blocks[i];
-		SDL_Rect srcRect = blockSprites[b.col];
-		SDL_Rect blockRect = { boardTopX + 24*(b.x), boardTopY + boardH - 24*(1+b.y), 24, 24};
-		SDL_RenderCopy(gRenderer, blockTexture, &srcRect, &blockRect);
+	if (!mustSpawn) {
+		for (int i = 0; i < 4; i++) {
+			BlockInstance b = selection.blocks[i];
+			SDL_Rect srcRect = blockSprites[b.col];
+			SDL_Rect blockRect = { boardTopX + 24 * (b.x), boardTopY + boardH - 24 * (1 + b.y), 24, 24 };
+			SDL_RenderCopy(gRenderer, blockTexture, &srcRect, &blockRect);
+		}
+	}
+}
+
+void Game::DrawBoard() {
+
+	for (int i = 0; i < 21; i++) {
+		for (int j = 0; j < 10; j++) {
+			if (board[i][j] != EMPTY) {
+				SDL_Rect srcRect = blockSprites[board[i][j]];
+				SDL_Rect blockRect = { boardTopX + 24 * (j), boardTopY + boardH - 24 * (1 + i), 24, 24 };
+				SDL_RenderCopy(gRenderer, blockTexture, &srcRect, &blockRect);
+			}
+		}
 	}
 }
 

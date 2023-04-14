@@ -52,10 +52,15 @@ private:
 	SDL_Rect boardBorder = { boardTopX - 5, boardTopY - 5, boardW + 10, boardH + 10 };
 	void FillPieceQueue();
 	void Gravity();
+	bool mustSpawn = false;
 	int currentPiece = NULL;
 	PieceInstance selection = PieceInstance();
 	void DrawSelection();
+	void DrawBoard();
 	void shift(int amount);
+	void CheckLock();
+	void Lock();
+	void SpawnPiece();
 	bool SetupBlockSprites();
 	bool handleInput(SDL_Event &e);
 	Timer gravityTimer;
