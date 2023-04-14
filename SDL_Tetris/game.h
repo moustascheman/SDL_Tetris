@@ -61,6 +61,8 @@ private:
 	void DrawSelection();
 	void DrawBoard();
 	void shift(int amount);
+	void render();
+	void gameLogic();
 	void CheckLock();
 	void LoadSRSTests();
 	void RotateClockwise();
@@ -70,6 +72,7 @@ private:
 	bool ValidPosition(int x, int y);
 	bool TestRotation(int originalOrientation);
 	void CheckRows();
+	void SoftDrop(int y);
 	bool handleInput(SDL_Event &e);
 	Timer gravityTimer;
 	Timer lockTimer;

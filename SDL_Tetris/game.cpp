@@ -326,6 +326,10 @@ bool Game::handleInput(SDL_Event &e) {
 						RotateClockwise();
 					}
 				}
+
+				case SDLK_DOWN: {
+					SoftDrop(1);
+				}
 			}
 		}
 
@@ -355,6 +359,36 @@ void Game::shift(int amount) {
 		}
 	}
 
+}
+
+void Game::SoftDrop(int y) {
+	bool isValid = true;
+	for (BlockInstance& b : selection.blocks) {
+		if (ValidPosition(b.x, b.y)) {
+			if (ValidPosition(b.x, b.y - y)) {
+				
+			}
+			else {
+				isValid = false;
+				gravityTimer.Stop();
+				lockTimer.Stop();
+				Lock();
+			}
+		}
+		else {
+			isValid = false;
+			gravityTimer.Stop();
+			lockTimer.Stop();
+			Lock();
+		}
+	}
+	if (isValid) {
+		gravityTimer.Stop();
+		lockTimer.Stop();
+		for (BlockInstance& b : selection.blocks) {
+			b.y -= y;
+		}
+	}
 }
 
 void Game::RotateClockwise() {
@@ -465,23 +499,16 @@ void Game::runGame() {
 
 		//Game Logic
 
-		Gravity();
-		CheckLock();
+		gameLogic();
 
-		//Rendering
-		SDL_SetRenderDrawColor(gRenderer, 0x0, 0x0, 0x0, 0xFF);
-		SDL_RenderClear(gRenderer);
-		SDL_SetRenderDrawColor(gRenderer, 0x80, 0x80, 0x80, 0xFF);
-		SDL_RenderFillRect(gRenderer, &boardBorder);
-		SDL_SetRenderDrawColor(gRenderer, 0x0, 0x0, 0x0, 0xFF);
-		SDL_RenderFillRect(gRenderer, &boardRect);
-		DrawSelection();
-		DrawBoard();
-
-
-		SDL_RenderPresent(gRenderer);
+		render();
 	}
 
+}
+
+void Game::gameLogic() {
+	Gravity();
+	CheckLock();
 }
 
 void Game::CheckRows() {
@@ -513,6 +540,22 @@ void Game::DrawSelection() {
 		}
 	}
 }
+
+void Game::render() {
+	//Rendering
+	SDL_SetRenderDrawColor(gRenderer, 0x0, 0x0, 0x0, 0xFF);
+	SDL_RenderClear(gRenderer);
+	SDL_SetRenderDrawColor(gRenderer, 0x80, 0x80, 0x80, 0xFF);
+	SDL_RenderFillRect(gRenderer, &boardBorder);
+	SDL_SetRenderDrawColor(gRenderer, 0x0, 0x0, 0x0, 0xFF);
+	SDL_RenderFillRect(gRenderer, &boardRect);
+	DrawSelection();
+	DrawBoard();
+
+
+	SDL_RenderPresent(gRenderer);
+}
+
 
 void Game::DrawBoard() {
 
