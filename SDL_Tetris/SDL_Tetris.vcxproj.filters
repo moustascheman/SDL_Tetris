@@ -24,6 +24,9 @@
     <ClCompile Include="PieceInstance.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game.h">
@@ -33,6 +36,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="PieceInstance.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

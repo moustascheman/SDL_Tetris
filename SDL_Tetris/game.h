@@ -7,6 +7,7 @@
 #include <chrono>
 #include <array>
 #include "PieceInstance.h"
+#include "Timer.h"
 
 
 
@@ -57,6 +58,8 @@ private:
 	void shift(int amount);
 	bool SetupBlockSprites();
 	bool handleInput(SDL_Event &e);
+	Timer gravityTimer;
+	Timer lockTimer;
 };
 
 

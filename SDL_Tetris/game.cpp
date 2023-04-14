@@ -46,6 +46,9 @@ bool Game::Initialize() {
 	//spawn top piece
 	selection.SpawnNewPiece(static_cast<pieceType>(currentPiece));
 	
+	//initialize timers
+	gravityTimer = Timer();
+	lockTimer = Timer();
 	
 	return true;
 
@@ -54,7 +57,28 @@ bool Game::Initialize() {
 
 
 void Game::Gravity() {
-	
+	if (gravityTimer.isRunning) {
+		uint64_t currentTime = gravityTimer.GetTime();
+		if (currentTime >= 1000) {
+			gravityTimer.Stop();
+			bool isValid = true;
+			for (BlockInstance& b : selection.blocks) {
+				if (b.y - 1 < 0) {
+					isValid = false;
+					break;
+				}
+				else if(board[b.y-1][b.x] != EMPTY) {
+					isValid = false;
+					break;
+				}
+			}
+			if (isValid) {
+				for (BlockInstance& b : selection.blocks) {
+					b.y -= 1;
+				}
+			}
+		}
+	}
 }
 
 void Game::FillPieceQueue() {
@@ -169,6 +193,7 @@ void Game::shift(int amount) {
 		}
 	}
 	if (isValid) {
+		gravityTimer.Stop();
 		for (BlockInstance &b : selection.blocks) {
 			b.x += amount;
 		}
@@ -181,14 +206,17 @@ void Game::runGame() {
 	//std::cout << std::endl << "CURRENT PIECE: " << currentPiece << "\n";
 	SDL_Event e;
 	bool quit = false;
+	
 	while (!quit) {
-
+		if (!gravityTimer.isRunning) {
+			gravityTimer.Start();
+		}
 		//Handle Input
 		quit = handleInput(e);
 
 		//Game Logic
 
-
+		Gravity();
 
 		//Rendering
 		SDL_SetRenderDrawColor(gRenderer, 0x0, 0x0, 0x0, 0xFF);

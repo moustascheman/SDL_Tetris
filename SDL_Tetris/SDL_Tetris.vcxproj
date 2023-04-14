@@ -135,11 +135,13 @@
     <ClCompile Include="game.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PieceInstance.cpp" />
+    <ClCompile Include="Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game.h" />
     <ClInclude Include="GameEnums.h" />
     <ClInclude Include="PieceInstance.h" />
+    <ClInclude Include="Timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
