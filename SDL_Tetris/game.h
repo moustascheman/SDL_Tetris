@@ -69,6 +69,7 @@ private:
 	bool SetupBlockSprites();
 	bool ValidPosition(int x, int y);
 	bool TestRotation(int originalOrientation);
+	void CheckRows();
 	bool handleInput(SDL_Event &e);
 	Timer gravityTimer;
 	Timer lockTimer;

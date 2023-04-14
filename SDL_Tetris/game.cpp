@@ -164,7 +164,7 @@ void Game::LoadSRSTests() {
 void Game::Gravity() {
 	if (gravityTimer.isRunning) {
 		uint64_t currentTime = gravityTimer.GetTime();
-		if (currentTime >= 1000) {
+		if (currentTime >= 500) {
 			gravityTimer.Stop();
 			bool isValid = true;
 			for (BlockInstance& b : selection.blocks) {
@@ -216,6 +216,7 @@ void Game::Lock() {
 		board[b.y][b.x] = b.col;
 	}
 	mustSpawn = true;
+	CheckRows();
 }
 
 
@@ -483,6 +484,22 @@ void Game::runGame() {
 
 }
 
+void Game::CheckRows() {
+	for (int i = 0; i < VANISH_ZONE_LINE; i++) {
+		bool full = true;
+		for (int j = 0; j < 10; j++) {
+			if (board[i][j] == EMPTY) {
+				full = false;
+			}
+		}
+		if (full) {
+			std::vector<block> row(10, EMPTY);
+			board.erase(std::next(std::begin(board), i));
+			board.push_back(row);
+			i--;
+		}
+	}
+}
 
 
 void Game::DrawSelection() {
